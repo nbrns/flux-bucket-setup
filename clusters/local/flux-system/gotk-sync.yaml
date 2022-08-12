@@ -23,7 +23,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./clusters/local
+  path: ./clusters/local/
   prune: true
   sourceRef:
     kind: Bucket
