@@ -1,0 +1,31 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: Bucket
+metadata:
+  name: flux-system-bucket-source
+  namespace: flux-system
+spec:
+  # use generic provider to make migration to local s3 easier
+  # flux also provides an aws provider, cf. https://fluxcd.io/docs/components/source/buckets/#aws
+  provider: generic
+  interval: 5m0s
+  bucketName: flux-local-setup-test
+  endpoint: s3.amazonaws.com
+  region: us-east-1
+  timeout: 60s
+  secretRef:
+    name: flux-system-bucket-credentials
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: flux-system-bucket-source
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./
+  prune: true
+  sourceRef:
+    kind: Bucket
+    name: flux-system-bucket-source
+    namespace: default
