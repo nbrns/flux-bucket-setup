@@ -28,4 +28,4 @@ spec:
   sourceRef:
     kind: Bucket
     name: flux-system-bucket-source
-    namespace: default
+    namespace: flux-system
