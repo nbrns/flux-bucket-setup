@@ -21,43 +21,57 @@ Export the Flux [GOTK components](https://fluxcd.io/docs/components/)
 
 ```bash
 mkdir -p clusters/local/flux-system
-cd clusters/local/flux-system
-flux install --export > gotk-components.yml
+flux install --export > clusters/local/flux-system/gotk-components.yaml
 ```
 
-Install the GOTK components (install Flux CRDs and instantiate base controllers in namespace _flux-system_)
+Install the GOTK components on the cluster (install Flux CRDs and instantiate base controllers in namespace _flux-system_)
 
 ```bash
-kubectl apply -f gotk-components.yml
+kubectl apply -f clusters/local/flux-system/gotk-components.yaml
 ```
 
-## Setup The Bucket Source (S3)
+## Setup The Bucket Source (S3 Example)
 
-Create the bucket
+Create the bucket (make sure to install [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and configure it with `aws configure`)
 
 ```bash
+aws s3api create-bucket --bucket flux-local-setup-test --region us-east-1
+```
+> **NOTE**: If you wish to use another bucket name, make sure to change the bucketName in the Bucket spec of [gotk-sync.yaml](clusters/local/flux-system/gotk-sync.yaml) as well.
 
+Upload your manifests to the bucket
+```bash
+aws s3 cp --recursive ./clusters/ s3://flux-local-setup-test/clusters/
 ```
 
-Create the secret
-
+Edit and save the contents of the flux-credetials.yaml file. It should similar to this:
 ```yaml
-
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: flux-system-bucket-credentials
+  namespace: flux-system
+type: Opaque
+data:
+  # Paste your secret data here and think of using SOPS to encrypt secrets, cf. https://fluxcd.io/docs/guides/mozilla-sops/
+  accesskey: <ACCESS_KEY>
+  secretkey:  <ACCESS_KEY_SECRET>
 ```
 
 Apply the secret
-
-Create the secret
-
 ```bash
-
+kubectl apply -f flux-credentials.yaml
 ```
 
 Apply the source
-
 ```bash
-
+kubectl apply -f clusters/local/flux-system/gotk-sync.yaml
 ```
+
+Now Flux starts syncing and creates the demo application in [apps](./clusters/local/apps/) for you.
+
+> **NOTE**: The source sync is usually established by the `flux bootstrap` command, which generates the necessary manifests. Thus, be careful when applying changes to the source sync, as it is essential for Flux to work.
 
 ## Cleanup
 
